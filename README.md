@@ -1,6 +1,7 @@
 # Crypto Declare
 
 Prototype web service for calculating Swedish crypto taxes.
+Ethereum and Solana wallets are supported.
 
 ## Setup
 
