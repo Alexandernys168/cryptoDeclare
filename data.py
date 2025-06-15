@@ -3,6 +3,7 @@
 import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+import time
 
 import requests
 
@@ -26,8 +27,51 @@ def fetch_transactions(address: str, chain: str = "ethereum") -> List[Dict[str, 
             "apikey": ETHERSCAN_API_KEY,
         }
     elif chain == "solana":
-        url = "https://api.solscan.io/account/transactions"
-        params = {"address": address}
+        endpoint = "https://api.mainnet-beta.solana.com"
+        signatures = []
+        before = None
+        while True:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "getSignaturesForAddress",
+                "params": [address, {"limit": 1000, **({"before": before} if before else {})}],
+            }
+            try:
+                resp = requests.post(endpoint, json=payload, timeout=10)
+                resp.raise_for_status()
+                batch = resp.json().get("result", [])
+                signatures.extend(batch)
+                log_run(f"Fetched {len(batch)} Solana signatures")
+                if len(batch) < 1000:
+                    break
+                before = batch[-1]["signature"]
+                time.sleep(0.3)
+            except Exception as exc:
+                log_run(f"Solana signature fetch error: {exc}")
+                break
+
+        transactions = []
+        for item in signatures:
+            sig = item.get("signature")
+            if not sig:
+                continue
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "getTransaction",
+                "params": [sig, {"encoding": "jsonParsed"}],
+            }
+            try:
+                resp = requests.post(endpoint, json=payload, timeout=10)
+                resp.raise_for_status()
+                tx = resp.json().get("result")
+                if tx:
+                    transactions.append(tx)
+                time.sleep(0.3)
+            except Exception as exc:
+                log_run(f"Solana transaction fetch error: {exc}")
+        return transactions
     else:
         raise ValueError("Unsupported chain")
     try:

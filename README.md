@@ -1,7 +1,8 @@
 # Crypto Declare
 
 Prototype web service for calculating Swedish crypto taxes.
-Ethereum and Solana wallets are supported.
+Ethereum and Solana wallets are supported. Solana data is fetched using the
+official JSON-RPC API at `https://api.mainnet-beta.solana.com`.
 
 ## Setup
 
