@@ -3,6 +3,15 @@
 <head>
     <meta charset="utf-8" />
     <title>Crypto Declarer</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f7f7f7; }
+        h1 { color: #333; }
+        form, .actions { margin-bottom: 1rem; }
+        label { margin-right: 1rem; }
+        button { margin-right: 0.5rem; padding: 0.4rem 0.8rem; }
+        pre { background: #fff; padding: 1rem; border: 1px solid #ccc; }
+        #status { margin-top: 1rem; font-weight: bold; }
+    </style>
 </head>
 <body>
     <h1>Crypto Declarer</h1>
@@ -16,8 +25,11 @@
         </label>
         <button type="submit">Add Address</button>
     </form>
-    <button onclick="fetchTx()">Fetch Transactions</button>
-    <button onclick="calc()">Calculate</button>
+    <div class="actions">
+        <button onclick="fetchTx()">Fetch Transactions</button>
+        <button onclick="calc()">Calculate</button>
+    </div>
+    <div id="status"></div>
     <pre id="output"></pre>
 <script>
     document.getElementById('addForm').addEventListener('submit', async ev => {
@@ -33,14 +45,18 @@
         document.getElementById('output').textContent = JSON.stringify(data, null, 2);
     });
     async function fetchTx() {
+        document.getElementById('status').textContent = 'Fetching transactions...';
         const res = await fetch('/fetch_transactions', {method: 'POST'});
         const data = await res.json();
         document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('status').textContent = 'Fetching complete';
     }
     async function calc() {
+        document.getElementById('status').textContent = 'Calculating...';
         const res = await fetch('/calculate', {method: 'POST'});
         const data = await res.json();
         document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('status').textContent = 'Calculation complete';
     }
 </script>
 </body>
